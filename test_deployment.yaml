@@ -1,0 +1,80 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+ labels:
+   app: hotrod
+ name: hotrod
+spec:
+ replicas: 1
+ selector:
+   matchLabels:
+     app: hotrod
+ template:
+   metadata:
+     labels:
+       app: hotrod
+   spec:
+     containers:
+       - args:
+           - all
+         env:
+           - name: JAEGER_AGENT_HOST
+             value: tempo.observability
+           - name: JAEGER_AGENT_PORT
+             value: '6831'
+           - name: JAEGER_SAMPLER_TYPE
+             value: const
+           - name: JAEGER_SAMPLER_PARAM
+             value: '1'
+         image: jaegertracing/example-hotrod:1.41.0
+         name: hotrod
+         ports:
+           - containerPort: 8080
+     restartPolicy: Always
+---
+apiVersion: v1
+kind: Service
+metadata:
+ labels:
+   app: hotrod
+ name: hotrod
+spec:
+ ports:
+   - name: 'http'
+     port: 8080
+     targetPort: 8080
+ selector:
+   app: hotrod
+ type: NodePort  
+
+---
+
+# Annotations Reference: https://kubernetes-sigs.github.io/aws-load-balancer-controller/latest/guide/ingress/annotations/
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: hotrod-ingress-basics
+  labels:
+    app: hotrod
+  annotations:
+    # Load Balancer Name
+    alb.ingress.kubernetes.io/load-balancer-name: hotrod-ingress
+    #kubernetes.io/ingress.class: "alb" (OLD INGRESS CLASS NOTATION - STILL WORKS BUT RECOMMENDED TO USE IngressClass Resource) # Additional Notes: https://kubernetes-sigs.github.io/aws-load-balancer-controller/v2.3/guide/ingress/ingress_class/#deprecated-kubernetesioingressclass-annotation
+    # Ingress Core Settings
+    alb.ingress.kubernetes.io/scheme: internet-facing
+    # Health Check Settings
+    alb.ingress.kubernetes.io/healthcheck-protocol: HTTP 
+    alb.ingress.kubernetes.io/healthcheck-port: traffic-port
+    alb.ingress.kubernetes.io/healthcheck-path: /   
+    alb.ingress.kubernetes.io/healthcheck-interval-seconds: '15'
+    alb.ingress.kubernetes.io/healthcheck-timeout-seconds: '5'
+    alb.ingress.kubernetes.io/success-codes: '200'
+    alb.ingress.kubernetes.io/healthy-threshold-count: '2'
+    alb.ingress.kubernetes.io/unhealthy-threshold-count: '2'
+spec:
+  ingressClassName: my-aws-ingress-class # Ingress Class created through helm
+  defaultBackend:
+    service:
+      name: hotrod
+      port:
+        number: 8080   

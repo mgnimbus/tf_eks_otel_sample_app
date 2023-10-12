@@ -22,6 +22,8 @@ spec:
       logging:
       otlp:
         endpoint: "<tempo_endpoint>"
+        tls:
+          insecure: true
 
     service:
       pipelines:
