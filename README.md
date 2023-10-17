@@ -37,6 +37,8 @@ Before we deploy the OpenTelemetry Operator, we will first start deploy another 
 
 kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.11.0/cert-manager.yaml 
 
+kubectl delete -f https://github.com/cert-manager/cert-manager/releases/download/v1.11.0/cert-manager.yaml 
+
 kubectl apply -f 2_cert_manager.yaml
 
 kubectl apply -f opentelemetry-operator.yaml
@@ -47,6 +49,8 @@ kubectl apply -f opentelemetry-operator.yaml
 Now that the cert-manager is deployed, we can begin installing the OpenTelemetry collector. This can be done by applying the operator manifest directly like this:
 
 kubectl apply -f https://github.com/open-telemetry/opentelemetry-operator/releases/latest/download/opentelemetry-operator.yaml
+
+kubectl delete -f https://github.com/open-telemetry/opentelemetry-operator/releases/latest/download/opentelemetry-operator.yaml
 
 Once the operator is deployed, it will provide two custom resources:
 

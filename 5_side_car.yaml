@@ -15,11 +15,11 @@ spec:
     exporters:
       logging:
       otlp:
-        endpoint: "<path_to_central_collector>:4317"
+        endpoint: http://myapp-collector:4317
     service:
       telemetry:
         logs:
-          level: "debug"
+          level: debug
       pipelines:
         traces:
           receivers: [otlp]
