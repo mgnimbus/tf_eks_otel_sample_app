@@ -1,0 +1,28 @@
+
+apiVersion: opentelemetry.io/v1alpha1
+kind: OpenTelemetryCollector
+metadata:
+  name: sidecar
+spec:
+  mode: sidecar
+  config: |
+    receivers:
+      otlp:
+        protocols:
+          grpc:
+          http:
+    processors:
+      batch:
+    exporters:
+      logging:
+      otlp:
+        endpoint: http://myapp-collector:4317
+    service:
+      telemetry:
+        logs:
+          level: debug
+      pipelines:
+        traces:
+          receivers: [otlp]
+          processors: []
+          exporters: [logging, otlp]
